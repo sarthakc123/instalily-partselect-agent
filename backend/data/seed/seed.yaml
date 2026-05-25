@@ -1,0 +1,854 @@
+# Synthetic seed dataset for the PartSelect chat agent POC.
+#
+# Design notes (mirror Phase 1 of the plan):
+# - 50 parts (mix refrigerator + dishwasher).
+# - 20 models (mix brands: Whirlpool, GE, Samsung, LG, KitchenAid, Maytag, Bosch, Frigidaire).
+# - 30+ compatibility edges (the workhorse table; check_compatibility queries this).
+# - 10 symptoms (5 refrigerator, 5 dishwasher).
+# - 10 install guides (key parts; powers Tool 3 in Phase 2).
+# - Case-study examples present:
+#     * PS11752778 = real Whirlpool refrigerator ice maker assembly.
+#     * WDT780SAEM1 = real Whirlpool dishwasher model.
+#   These are intentionally cross-appliance, so check_compatibility returns "no"
+#   with a clear reason. The agent should notice the appliance-type mismatch and
+#   explain it rather than silently saying no.
+# - For positive compat tests:
+#     * PS11743427 (dishwasher water inlet valve) FITS WDT780SAEM1.
+#     * PS11752778 (fridge ice maker) FITS WRF555SDFZ (Whirlpool fridge).
+# - series_fitment_hint on a few install guides powers the "inferred" compat path
+#   that the validator will exercise later.
+
+# -----------------------------------------------------------------------------
+# Parts (50)
+# -----------------------------------------------------------------------------
+parts:
+  # Refrigerator parts (25)
+  - id: PS11752778
+    name: Refrigerator Ice Maker Assembly
+    manufacturer: Whirlpool
+    appliance_type: refrigerator
+    part_type: ice_maker
+    price_cents: 17999
+    in_stock: true
+    description: >-
+      Complete ice maker assembly for Whirlpool side-by-side and french-door
+      refrigerators. Replaces a worn or non-functioning ice maker module.
+
+  - id: PS12348107
+    name: Refrigerator Water Filter (EveryDrop Filter 1)
+    manufacturer: Whirlpool
+    appliance_type: refrigerator
+    part_type: water_filter
+    price_cents: 4999
+    description: >-
+      EveryDrop Filter 1 replacement. Reduces chlorine, lead, and 70+ other
+      contaminants. Replace every 6 months.
+
+  - id: PS755842
+    name: Refrigerator Door Gasket
+    manufacturer: Whirlpool
+    appliance_type: refrigerator
+    part_type: door_gasket
+    price_cents: 7299
+    description: >-
+      Magnetic door gasket. Restores a proper seal and corrects warm-spots or
+      ice buildup caused by leaking cold air.
+
+  - id: PS392164
+    name: Defrost Heater Assembly
+    manufacturer: Whirlpool
+    appliance_type: refrigerator
+    part_type: defrost_heater
+    price_cents: 8499
+    description: >-
+      Defrost heater. Replace when frost builds up on the evaporator coils
+      and the freezer warms or stops cooling.
+
+  - id: PS3489202
+    name: Evaporator Fan Motor
+    manufacturer: GE
+    appliance_type: refrigerator
+    part_type: evaporator_fan_motor
+    price_cents: 6499
+
+  - id: PS734936
+    name: Compressor Start Relay
+    manufacturer: Whirlpool
+    appliance_type: refrigerator
+    part_type: start_relay
+    price_cents: 3499
+
+  - id: PS429725
+    name: Temperature Control Thermostat
+    manufacturer: GE
+    appliance_type: refrigerator
+    part_type: thermostat
+    price_cents: 4299
+
+  - id: PS734995
+    name: Defrost Thermostat
+    manufacturer: Whirlpool
+    appliance_type: refrigerator
+    part_type: defrost_thermostat
+    price_cents: 2599
+
+  - id: PS11738134
+    name: Crisper Drawer
+    manufacturer: Samsung
+    appliance_type: refrigerator
+    part_type: crisper_drawer
+    price_cents: 5999
+
+  - id: PS11743134
+    name: Door Bin
+    manufacturer: LG
+    appliance_type: refrigerator
+    part_type: door_bin
+    price_cents: 3299
+
+  - id: PS429726
+    name: LED Light Bulb
+    manufacturer: Whirlpool
+    appliance_type: refrigerator
+    part_type: light_bulb
+    price_cents: 1899
+
+  - id: PS11738135
+    name: Refrigerator Door Handle
+    manufacturer: Samsung
+    appliance_type: refrigerator
+    part_type: door_handle
+    price_cents: 3899
+
+  - id: PS3349562
+    name: Drain Pan
+    manufacturer: Whirlpool
+    appliance_type: refrigerator
+    part_type: drain_pan
+    price_cents: 2799
+
+  - id: PS11763254
+    name: Condenser Fan Motor
+    manufacturer: GE
+    appliance_type: refrigerator
+    part_type: condenser_fan_motor
+    price_cents: 5699
+
+  - id: PS11757654
+    name: Refrigerator Water Inlet Valve
+    manufacturer: Whirlpool
+    appliance_type: refrigerator
+    part_type: water_inlet_valve
+    price_cents: 4999
+
+  - id: PS11738142
+    name: Crisper Cover
+    manufacturer: Samsung
+    appliance_type: refrigerator
+    part_type: crisper_cover
+    price_cents: 4199
+
+  - id: PS11756893
+    name: Shelf Bracket
+    manufacturer: LG
+    appliance_type: refrigerator
+    part_type: shelf_bracket
+    price_cents: 1499
+
+  - id: PS11774125
+    name: Refrigerator Door Switch
+    manufacturer: Whirlpool
+    appliance_type: refrigerator
+    part_type: door_switch
+    price_cents: 2099
+
+  - id: PS11738145
+    name: Defrost Timer
+    manufacturer: Whirlpool
+    appliance_type: refrigerator
+    part_type: defrost_timer
+    price_cents: 3899
+
+  - id: PS11756147
+    name: Door Seal
+    manufacturer: Samsung
+    appliance_type: refrigerator
+    part_type: door_seal
+    price_cents: 6999
+
+  - id: PS11757891
+    name: Freezer Drawer
+    manufacturer: LG
+    appliance_type: refrigerator
+    part_type: freezer_drawer
+    price_cents: 7299
+
+  - id: PS3499213
+    name: Ice Maker Auger
+    manufacturer: GE
+    appliance_type: refrigerator
+    part_type: ice_maker_auger
+    price_cents: 3499
+
+  - id: PS734812
+    name: Refrigerator Thermistor
+    manufacturer: Whirlpool
+    appliance_type: refrigerator
+    part_type: thermistor
+    price_cents: 1899
+
+  - id: PS11756248
+    name: Door Hinge
+    manufacturer: Samsung
+    appliance_type: refrigerator
+    part_type: door_hinge
+    price_cents: 2799
+
+  - id: PS3349874
+    name: Adaptive Defrost Control Board
+    manufacturer: Whirlpool
+    appliance_type: refrigerator
+    part_type: defrost_control
+    price_cents: 7999
+
+  # Dishwasher parts (25)
+  - id: PS11743427
+    name: Dishwasher Water Inlet Valve
+    manufacturer: Whirlpool
+    appliance_type: dishwasher
+    part_type: water_inlet_valve
+    price_cents: 4799
+    description: >-
+      Replacement water inlet valve. Replace when the dishwasher fails to
+      fill with water, fills slowly, or floods.
+
+  - id: PS11722152
+    name: Dishwasher Pump and Motor Assembly
+    manufacturer: Whirlpool
+    appliance_type: dishwasher
+    part_type: pump_motor_assembly
+    price_cents: 18999
+
+  - id: PS395646
+    name: Dishwasher Door Latch Assembly
+    manufacturer: Whirlpool
+    appliance_type: dishwasher
+    part_type: door_latch
+    price_cents: 5499
+
+  - id: PS734864
+    name: Dishwasher Heating Element
+    manufacturer: Whirlpool
+    appliance_type: dishwasher
+    part_type: heating_element
+    price_cents: 4999
+
+  - id: PS3406971
+    name: Dishwasher Upper Spray Arm
+    manufacturer: Whirlpool
+    appliance_type: dishwasher
+    part_type: spray_arm_upper
+    price_cents: 3599
+
+  - id: PS11756398
+    name: Dishwasher Lower Spray Arm
+    manufacturer: Whirlpool
+    appliance_type: dishwasher
+    part_type: spray_arm_lower
+    price_cents: 4199
+
+  - id: PS11757456
+    name: Dishwasher Drain Hose
+    manufacturer: Whirlpool
+    appliance_type: dishwasher
+    part_type: drain_hose
+    price_cents: 2899
+
+  - id: PS11758746
+    name: Dishwasher Door Gasket
+    manufacturer: KitchenAid
+    appliance_type: dishwasher
+    part_type: door_gasket
+    price_cents: 5299
+
+  - id: PS11756879
+    name: Dishwasher Control Board
+    manufacturer: Whirlpool
+    appliance_type: dishwasher
+    part_type: control_board
+    price_cents: 14999
+
+  - id: PS11756894
+    name: Dishwasher Door Spring
+    manufacturer: Whirlpool
+    appliance_type: dishwasher
+    part_type: door_spring
+    price_cents: 1599
+
+  - id: PS755856
+    name: Dishwasher Float Switch
+    manufacturer: GE
+    appliance_type: dishwasher
+    part_type: float_switch
+    price_cents: 2399
+
+  - id: PS11756123
+    name: Dishwasher Upper Rack Wheel
+    manufacturer: Bosch
+    appliance_type: dishwasher
+    part_type: rack_wheel
+    price_cents: 1299
+
+  - id: PS11762148
+    name: Dishwasher Lower Rack
+    manufacturer: KitchenAid
+    appliance_type: dishwasher
+    part_type: lower_rack
+    price_cents: 11999
+
+  - id: PS11759021
+    name: Dishwasher Filter Assembly
+    manufacturer: Whirlpool
+    appliance_type: dishwasher
+    part_type: filter_assembly
+    price_cents: 3299
+
+  - id: PS11756134
+    name: Dishwasher Silverware Basket
+    manufacturer: Whirlpool
+    appliance_type: dishwasher
+    part_type: silverware_basket
+    price_cents: 2199
+
+  - id: PS11758912
+    name: Dishwasher Door Strike
+    manufacturer: Whirlpool
+    appliance_type: dishwasher
+    part_type: door_strike
+    price_cents: 1999
+
+  - id: PS11743210
+    name: Dishwasher Sump Cover
+    manufacturer: Whirlpool
+    appliance_type: dishwasher
+    part_type: sump_cover
+    price_cents: 2599
+
+  - id: PS11758940
+    name: Dishwasher Drain Pump
+    manufacturer: Whirlpool
+    appliance_type: dishwasher
+    part_type: drain_pump
+    price_cents: 8499
+
+  - id: PS11756432
+    name: Dishwasher Wash Motor
+    manufacturer: Bosch
+    appliance_type: dishwasher
+    part_type: wash_motor
+    price_cents: 16999
+
+  - id: PS11756876
+    name: Dishwasher Rinse Aid Dispenser
+    manufacturer: KitchenAid
+    appliance_type: dishwasher
+    part_type: rinse_aid_dispenser
+    price_cents: 4499
+
+  - id: PS11756987
+    name: Dishwasher Detergent Dispenser
+    manufacturer: Whirlpool
+    appliance_type: dishwasher
+    part_type: detergent_dispenser
+    price_cents: 4999
+
+  - id: PS11756321
+    name: Dishwasher Door Catch
+    manufacturer: Maytag
+    appliance_type: dishwasher
+    part_type: door_catch
+    price_cents: 1799
+
+  - id: PS11759843
+    name: Dishwasher Spray Tower
+    manufacturer: Whirlpool
+    appliance_type: dishwasher
+    part_type: spray_tower
+    price_cents: 2899
+
+  - id: PS734967
+    name: Dishwasher Timer
+    manufacturer: GE
+    appliance_type: dishwasher
+    part_type: timer
+    price_cents: 6499
+
+  - id: PS11758643
+    name: Dishwasher Thermal Fuse
+    manufacturer: Whirlpool
+    appliance_type: dishwasher
+    part_type: thermal_fuse
+    price_cents: 1499
+
+# -----------------------------------------------------------------------------
+# Models (20)
+# -----------------------------------------------------------------------------
+models:
+  # Refrigerators (10)
+  - id: WRF555SDFZ
+    brand: Whirlpool
+    appliance_type: refrigerator
+    year: 2019
+    series: WRF55x
+    manual_url: ""
+  - id: WRS588FIHZ
+    brand: Whirlpool
+    appliance_type: refrigerator
+    year: 2020
+    series: WRS58x
+  - id: GFE28GYNFS
+    brand: GE
+    appliance_type: refrigerator
+    year: 2021
+    series: GFE28x
+  - id: RF28R7351SR
+    brand: Samsung
+    appliance_type: refrigerator
+    year: 2020
+    series: RF28x
+  - id: LFXS28968S
+    brand: LG
+    appliance_type: refrigerator
+    year: 2019
+    series: LFXS28x
+  - id: KRFC704FSS
+    brand: KitchenAid
+    appliance_type: refrigerator
+    year: 2020
+    series: KRFC70x
+  - id: MFI2570FEZ
+    brand: Maytag
+    appliance_type: refrigerator
+    year: 2018
+    series: MFI25x
+  - id: WRT318FZDW
+    brand: Whirlpool
+    appliance_type: refrigerator
+    year: 2017
+    series: WRT31x
+  - id: FFHB2750TS
+    brand: Frigidaire
+    appliance_type: refrigerator
+    year: 2019
+    series: FFHB27x
+  - id: GSS25GSHSS
+    brand: GE
+    appliance_type: refrigerator
+    year: 2018
+    series: GSS25x
+
+  # Dishwashers (10)
+  - id: WDT780SAEM1
+    brand: Whirlpool
+    appliance_type: dishwasher
+    year: 2019
+    series: WDT78x
+  - id: KDTM404KPS
+    brand: KitchenAid
+    appliance_type: dishwasher
+    year: 2020
+    series: KDTM40x
+  - id: GDT695SSJSS
+    brand: GE
+    appliance_type: dishwasher
+    year: 2019
+    series: GDT69x
+  - id: SHPM88Z75N
+    brand: Bosch
+    appliance_type: dishwasher
+    year: 2021
+    series: SHPM88x
+  - id: MDB4949SHZ
+    brand: Maytag
+    appliance_type: dishwasher
+    year: 2019
+    series: MDB49x
+  - id: DW80R7060US
+    brand: Samsung
+    appliance_type: dishwasher
+    year: 2020
+    series: DW80x
+  - id: LDT5678ST
+    brand: LG
+    appliance_type: dishwasher
+    year: 2018
+    series: LDT56x
+  - id: FFCD2418US
+    brand: Frigidaire
+    appliance_type: dishwasher
+    year: 2019
+    series: FFCD24x
+  - id: WDT730PAHZ
+    brand: Whirlpool
+    appliance_type: dishwasher
+    year: 2018
+    series: WDT73x
+  - id: WDF520PADM
+    brand: Whirlpool
+    appliance_type: dishwasher
+    year: 2017
+    series: WDF52x
+  # Intentionally left WITHOUT a direct compat edge to PS11743427 even though
+  # it is in series WDT78x. This exercises the 'inferred' verdict path: the
+  # install guide for PS11743427 says "fits all Whirlpool WDT78x and WDT73x
+  # dishwashers", so check_compatibility should return inferred (lower
+  # confidence, source=install_guide_inference) and the Phase 3 validator
+  # gets triggered.
+  - id: WDT789SAKZ
+    brand: Whirlpool
+    appliance_type: dishwasher
+    year: 2022
+    series: WDT78x
+
+# -----------------------------------------------------------------------------
+# Compatibility edges (35)
+# Edge semantics: a Part FITS a Model. check_compatibility uses these directly.
+# -----------------------------------------------------------------------------
+compatibility:
+  # PS11752778 (Whirlpool ice maker) fits Whirlpool refrigerators
+  - { part_id: PS11752778, model_id: WRF555SDFZ }
+  - { part_id: PS11752778, model_id: WRS588FIHZ }
+  - { part_id: PS11752778, model_id: WRT318FZDW }
+  - { part_id: PS11752778, model_id: KRFC704FSS, supersedes: PS11750000 }
+  - { part_id: PS11752778, model_id: MFI2570FEZ }
+
+  # PS11743427 (Whirlpool dishwasher water inlet valve) fits Whirlpool dishwashers
+  - { part_id: PS11743427, model_id: WDT780SAEM1 }
+  - { part_id: PS11743427, model_id: WDT730PAHZ }
+  - { part_id: PS11743427, model_id: WDF520PADM }
+  - { part_id: PS11743427, model_id: KDTM404KPS, requires_adapter: true }
+  - { part_id: PS11743427, model_id: MDB4949SHZ }
+
+  # PS11757654 (Whirlpool fridge water inlet valve)
+  - { part_id: PS11757654, model_id: WRF555SDFZ }
+  - { part_id: PS11757654, model_id: WRS588FIHZ }
+  - { part_id: PS11757654, model_id: WRT318FZDW }
+
+  # PS3489202 (GE evap fan)
+  - { part_id: PS3489202, model_id: GFE28GYNFS }
+  - { part_id: PS3489202, model_id: GSS25GSHSS }
+
+  # PS11722152 (Whirlpool pump and motor assembly)
+  - { part_id: PS11722152, model_id: WDT780SAEM1 }
+  - { part_id: PS11722152, model_id: WDT730PAHZ }
+  - { part_id: PS11722152, model_id: WDF520PADM }
+
+  # PS395646 (Whirlpool dishwasher door latch)
+  - { part_id: PS395646, model_id: WDT780SAEM1 }
+  - { part_id: PS395646, model_id: WDT730PAHZ }
+  - { part_id: PS395646, model_id: MDB4949SHZ }
+
+  # PS734864 (Whirlpool heating element)
+  - { part_id: PS734864, model_id: WDT780SAEM1 }
+  - { part_id: PS734864, model_id: WDT730PAHZ }
+  - { part_id: PS734864, model_id: KDTM404KPS }
+
+  # PS3406971 (Upper spray arm)
+  - { part_id: PS3406971, model_id: WDT780SAEM1, supersedes: PS3406900 }
+
+  # PS11756398 (Lower spray arm)
+  - { part_id: PS11756398, model_id: WDT780SAEM1 }
+  - { part_id: PS11756398, model_id: WDT730PAHZ }
+
+  # PS11756879 (Control board)
+  - { part_id: PS11756879, model_id: WDT780SAEM1 }
+
+  # PS11757456 (Drain hose)
+  - { part_id: PS11757456, model_id: WDT780SAEM1 }
+  - { part_id: PS11757456, model_id: KDTM404KPS }
+
+  # PS755856 (GE float switch)
+  - { part_id: PS755856, model_id: GDT695SSJSS }
+
+  # PS11758940 (Drain pump)
+  - { part_id: PS11758940, model_id: WDT780SAEM1 }
+  - { part_id: PS11758940, model_id: WDT730PAHZ }
+
+  # PS429725 (GE thermostat)
+  - { part_id: PS429725, model_id: GFE28GYNFS }
+
+  # PS11763254 (GE condenser fan)
+  - { part_id: PS11763254, model_id: GFE28GYNFS }
+  - { part_id: PS11763254, model_id: GSS25GSHSS }
+
+  # PS3499213 (GE ice maker auger)
+  - { part_id: PS3499213, model_id: GFE28GYNFS }
+  - { part_id: PS3499213, model_id: GSS25GSHSS }
+
+# -----------------------------------------------------------------------------
+# Symptoms (10)
+# -----------------------------------------------------------------------------
+symptoms:
+  - id: SY_ICE_MAKER_NOT_WORKING
+    description: Ice maker is not making ice or producing very little ice.
+    canonical_label: ice maker not working
+    appliance_type: refrigerator
+  - id: SY_FRIDGE_NOT_COOLING
+    description: Refrigerator section is not getting cold; food is warm.
+    canonical_label: refrigerator not cooling
+    appliance_type: refrigerator
+  - id: SY_FRIDGE_LEAKING_WATER
+    description: Water is pooling under or around the refrigerator.
+    canonical_label: refrigerator leaking water
+    appliance_type: refrigerator
+  - id: SY_FREEZER_NOT_FREEZING
+    description: Freezer section is warm or items are partially thawed.
+    canonical_label: freezer not freezing
+    appliance_type: refrigerator
+  - id: SY_DOOR_NOT_SEALING
+    description: Refrigerator door does not close fully or feels loose.
+    canonical_label: door not sealing
+    appliance_type: refrigerator
+  - id: SY_DISHWASHER_NOT_FILLING
+    description: Dishwasher does not fill with water at the start of a cycle.
+    canonical_label: dishwasher not filling
+    appliance_type: dishwasher
+  - id: SY_DISHWASHER_NOT_DRAINING
+    description: Standing water remains in the dishwasher after a cycle.
+    canonical_label: dishwasher not draining
+    appliance_type: dishwasher
+  - id: SY_DISHES_NOT_CLEANING
+    description: Dishes come out dirty after a normal cycle.
+    canonical_label: dishes not cleaning
+    appliance_type: dishwasher
+  - id: SY_DISHWASHER_LEAKING
+    description: Water leaks from under or in front of the dishwasher during a cycle.
+    canonical_label: dishwasher leaking
+    appliance_type: dishwasher
+  - id: SY_DISHWASHER_NOT_DRYING
+    description: Dishes are still wet at the end of the dry cycle.
+    canonical_label: dishwasher not drying
+    appliance_type: dishwasher
+
+# -----------------------------------------------------------------------------
+# Symptom -> Part fix edges (with likelihood + common_cause_rank)
+# -----------------------------------------------------------------------------
+symptom_fixes:
+  # Ice maker not working (refrigerator)
+  - { symptom_id: SY_ICE_MAKER_NOT_WORKING, part_id: PS11752778, likelihood: 0.60, common_cause_rank: 1 }
+  - { symptom_id: SY_ICE_MAKER_NOT_WORKING, part_id: PS11757654, likelihood: 0.20, common_cause_rank: 2 }
+  - { symptom_id: SY_ICE_MAKER_NOT_WORKING, part_id: PS3499213,  likelihood: 0.10, common_cause_rank: 3 }
+
+  # Fridge not cooling
+  - { symptom_id: SY_FRIDGE_NOT_COOLING, part_id: PS3489202, likelihood: 0.35, common_cause_rank: 1 }
+  - { symptom_id: SY_FRIDGE_NOT_COOLING, part_id: PS734936,  likelihood: 0.25, common_cause_rank: 2 }
+  - { symptom_id: SY_FRIDGE_NOT_COOLING, part_id: PS429725,  likelihood: 0.20, common_cause_rank: 3 }
+  - { symptom_id: SY_FRIDGE_NOT_COOLING, part_id: PS11763254, likelihood: 0.10, common_cause_rank: 4 }
+
+  # Fridge leaking water
+  - { symptom_id: SY_FRIDGE_LEAKING_WATER, part_id: PS11757654, likelihood: 0.40, common_cause_rank: 1 }
+  - { symptom_id: SY_FRIDGE_LEAKING_WATER, part_id: PS3349562,  likelihood: 0.30, common_cause_rank: 2 }
+
+  # Freezer not freezing
+  - { symptom_id: SY_FREEZER_NOT_FREEZING, part_id: PS392164,  likelihood: 0.45, common_cause_rank: 1 }
+  - { symptom_id: SY_FREEZER_NOT_FREEZING, part_id: PS734995,  likelihood: 0.25, common_cause_rank: 2 }
+  - { symptom_id: SY_FREEZER_NOT_FREEZING, part_id: PS3489202, likelihood: 0.20, common_cause_rank: 3 }
+
+  # Door not sealing
+  - { symptom_id: SY_DOOR_NOT_SEALING, part_id: PS755842,    likelihood: 0.70, common_cause_rank: 1 }
+  - { symptom_id: SY_DOOR_NOT_SEALING, part_id: PS11756248,  likelihood: 0.15, common_cause_rank: 2 }
+
+  # Dishwasher not filling
+  - { symptom_id: SY_DISHWASHER_NOT_FILLING, part_id: PS11743427, likelihood: 0.55, common_cause_rank: 1 }
+  - { symptom_id: SY_DISHWASHER_NOT_FILLING, part_id: PS755856,   likelihood: 0.25, common_cause_rank: 2 }
+
+  # Dishwasher not draining
+  - { symptom_id: SY_DISHWASHER_NOT_DRAINING, part_id: PS11758940, likelihood: 0.50, common_cause_rank: 1 }
+  - { symptom_id: SY_DISHWASHER_NOT_DRAINING, part_id: PS11722152, likelihood: 0.25, common_cause_rank: 2 }
+  - { symptom_id: SY_DISHWASHER_NOT_DRAINING, part_id: PS11757456, likelihood: 0.15, common_cause_rank: 3 }
+
+  # Dishes not cleaning
+  - { symptom_id: SY_DISHES_NOT_CLEANING, part_id: PS3406971,  likelihood: 0.30, common_cause_rank: 1 }
+  - { symptom_id: SY_DISHES_NOT_CLEANING, part_id: PS11756398, likelihood: 0.30, common_cause_rank: 2 }
+  - { symptom_id: SY_DISHES_NOT_CLEANING, part_id: PS734864,   likelihood: 0.20, common_cause_rank: 3 }
+  - { symptom_id: SY_DISHES_NOT_CLEANING, part_id: PS11759021, likelihood: 0.15, common_cause_rank: 4 }
+
+  # Dishwasher leaking
+  - { symptom_id: SY_DISHWASHER_LEAKING, part_id: PS11758746, likelihood: 0.45, common_cause_rank: 1 }
+  - { symptom_id: SY_DISHWASHER_LEAKING, part_id: PS11743427, likelihood: 0.25, common_cause_rank: 2 }
+  - { symptom_id: SY_DISHWASHER_LEAKING, part_id: PS11758912, likelihood: 0.10, common_cause_rank: 3 }
+
+  # Dishwasher not drying
+  - { symptom_id: SY_DISHWASHER_NOT_DRYING, part_id: PS734864,   likelihood: 0.60, common_cause_rank: 1 }
+  - { symptom_id: SY_DISHWASHER_NOT_DRYING, part_id: PS11756876, likelihood: 0.20, common_cause_rank: 2 }
+
+# -----------------------------------------------------------------------------
+# Install guides (10)
+# series_fitment_hint is included on a couple guides to power the
+# "inferred" compat fallback path tested in Phase 3.
+# -----------------------------------------------------------------------------
+install_guides:
+  - id: IG_PS11752778
+    part_id: PS11752778
+    difficulty: Moderate
+    estimated_minutes: 45
+    tools_required: "Phillips screwdriver, 1/4-inch nut driver"
+    safety_warnings: >-
+      Unplug the refrigerator before beginning. The ice maker can be sharp;
+      wear cut-resistant gloves.
+    steps: |
+      1. Unplug the refrigerator from the wall outlet.
+      2. Open the freezer door and locate the ice maker assembly.
+      3. Disconnect the wire harness on the side of the ice maker.
+      4. Remove the three mounting screws holding the ice maker bracket.
+      5. Lift the ice maker out and disconnect the water tube fitting.
+      6. Connect the water tube to the new ice maker.
+      7. Position the new ice maker and reinstall the three screws.
+      8. Reconnect the wire harness.
+      9. Plug the refrigerator back in.
+      10. Allow 6 to 24 hours for the ice maker to produce its first batch.
+    video_url: "https://www.partselect.com/Installation/Refrigerator-Ice-Maker/"
+    series_fitment_hint: "fits most Whirlpool side-by-side and french-door refrigerators"
+
+  - id: IG_PS11743427
+    part_id: PS11743427
+    difficulty: Easy
+    estimated_minutes: 20
+    tools_required: "Phillips screwdriver, towel"
+    safety_warnings: >-
+      Shut off the water supply and disconnect power before beginning.
+    steps: |
+      1. Shut off the water supply valve to the dishwasher.
+      2. Disconnect power at the breaker.
+      3. Open the lower access panel under the dishwasher door.
+      4. Place a towel to catch residual water.
+      5. Disconnect the water line and wire harness from the old valve.
+      6. Remove the two mounting screws and pull the old valve out.
+      7. Install the new valve with the same two screws.
+      8. Reconnect the water line and wire harness.
+      9. Restore water and power. Run a short cycle to verify no leaks.
+    series_fitment_hint: "fits all Whirlpool WDT78x and WDT73x dishwashers"
+
+  - id: IG_PS3489202
+    part_id: PS3489202
+    difficulty: Moderate
+    estimated_minutes: 40
+    tools_required: "Phillips screwdriver, 1/4-inch nut driver"
+    steps: |
+      1. Unplug the refrigerator.
+      2. Empty the freezer and remove the rear evaporator cover.
+      3. Disconnect the fan motor wire harness.
+      4. Remove the mounting bracket screws.
+      5. Pull out the old fan motor.
+      6. Install the new fan motor and bracket.
+      7. Reconnect the wire harness and reinstall the evaporator cover.
+      8. Plug the refrigerator back in.
+
+  - id: IG_PS734864
+    part_id: PS734864
+    difficulty: Moderate
+    estimated_minutes: 35
+    tools_required: "1/4-inch nut driver, pliers"
+    safety_warnings: >-
+      Disconnect power at the breaker. The element can stay hot; let the
+      dishwasher cool for at least 30 minutes before working.
+    steps: |
+      1. Disconnect power at the breaker.
+      2. Pull the dishwasher out from under the counter.
+      3. From underneath, locate the heating element terminals.
+      4. Disconnect the wires from both terminals.
+      5. Unscrew the retaining nuts from the bottom of the tub.
+      6. Inside the dishwasher, lift the heating element out.
+      7. Insert the new element and reattach the retaining nuts.
+      8. Reconnect the wires.
+      9. Slide the dishwasher back into place and restore power.
+
+  - id: IG_PS11722152
+    part_id: PS11722152
+    difficulty: Hard
+    estimated_minutes: 90
+    tools_required: "Phillips screwdriver, pliers, towel, T20 Torx bit"
+    safety_warnings: >-
+      Shut off water and disconnect power. The pump can hold residual water.
+    steps: |
+      1. Shut off water and power.
+      2. Pull the dishwasher out and tilt it on its back.
+      3. Remove the sump cover and filter.
+      4. Disconnect the wire harness and water lines from the pump.
+      5. Unscrew the pump retainer ring (counter-clockwise).
+      6. Lift the old pump out.
+      7. Install the new pump and lock the retainer ring clockwise.
+      8. Reconnect lines and wiring.
+      9. Right the dishwasher, slide it back, restore service, and run a cycle.
+
+  - id: IG_PS3406971
+    part_id: PS3406971
+    difficulty: Easy
+    estimated_minutes: 5
+    tools_required: ""
+    steps: |
+      1. Open the dishwasher door.
+      2. Twist the upper spray arm counter-clockwise to unscrew.
+      3. Thread the new spray arm clockwise until snug.
+      4. Verify it spins freely.
+
+  - id: IG_PS755856
+    part_id: PS755856
+    difficulty: Easy
+    estimated_minutes: 25
+    tools_required: "Phillips screwdriver"
+    steps: |
+      1. Disconnect power.
+      2. Remove the lower dish rack.
+      3. Unscrew the float dome inside the tub.
+      4. Pull the float assembly up and disconnect the switch wires beneath.
+      5. Install the new switch and float, reconnect wires.
+      6. Reinstall the rack and restore power.
+
+  - id: IG_PS429725
+    part_id: PS429725
+    difficulty: Moderate
+    estimated_minutes: 30
+    tools_required: "Phillips screwdriver"
+    steps: |
+      1. Unplug the refrigerator.
+      2. Locate the temperature control knob inside the fresh-food section.
+      3. Remove the knob and the screws holding the housing.
+      4. Disconnect the thermostat sensor tube and wires.
+      5. Install the new thermostat with the sensor tube oriented identically.
+      6. Reattach the housing and knob.
+      7. Plug the refrigerator back in.
+
+  - id: IG_PS11756879
+    part_id: PS11756879
+    difficulty: Hard
+    estimated_minutes: 60
+    tools_required: "Phillips screwdriver, T20 Torx bit"
+    safety_warnings: >-
+      Disconnect power at the breaker. The control board contains
+      static-sensitive components; ground yourself before handling.
+    steps: |
+      1. Disconnect power at the breaker.
+      2. Open the dishwasher door and remove the inner door panel screws.
+      3. Separate the inner panel from the outer panel.
+      4. Locate the control board housing.
+      5. Photograph wire positions, then disconnect each.
+      6. Unscrew the board from the housing.
+      7. Install the new board and reconnect wires per the photo.
+      8. Reassemble the door and restore power.
+
+  - id: IG_PS395646
+    part_id: PS395646
+    difficulty: Moderate
+    estimated_minutes: 30
+    tools_required: "Phillips screwdriver"
+    safety_warnings: >-
+      Disconnect power at the breaker.
+    steps: |
+      1. Disconnect power.
+      2. Remove the inner door panel screws.
+      3. Carefully separate the inner and outer door panels.
+      4. Locate the door latch assembly at the top.
+      5. Disconnect the wire harness and remove the mounting screws.
+      6. Install the new latch with the same screws and harness.
+      7. Reassemble the door and restore power.
