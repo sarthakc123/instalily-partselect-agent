@@ -1,0 +1,169 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="13">
+  <defs>
+    <style>
+      .label { fill: #0a0a0a; }
+      .muted { fill: #6b6b6b; }
+      .accent { fill: #ff5722; }
+      .box { fill: #ffffff; stroke: #0a0a0a; stroke-width: 1.5; }
+      .box-accent { fill: #fff7f3; stroke: #ff5722; stroke-width: 1.5; }
+      .box-muted { fill: #fafafa; stroke: #e5e5e5; stroke-width: 1; }
+      .arrow { stroke: #0a0a0a; stroke-width: 1.25; fill: none; }
+      .arrow-muted { stroke: #6b6b6b; stroke-width: 1; fill: none; stroke-dasharray: 4 3; }
+      .title { font-size: 14px; font-weight: 600; }
+      .head { font-size: 11px; font-weight: 700; letter-spacing: 1px; fill: #6b6b6b; }
+      .small { font-size: 11px; fill: #6b6b6b; }
+      .pill { fill: #0a0a0a; }
+      .pill-text { fill: #ffffff; font-size: 10px; font-weight: 600; letter-spacing: 0.6px; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#0a0a0a"/>
+    </marker>
+    <marker id="arrow-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#6b6b6b"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="40" y="44" class="label" font-size="20" font-weight="700">PartSelect Chat Agent — System Architecture</text>
+  <text x="40" y="64" class="muted" font-size="12">Phase 1 POC. All five tools built. 17 / 17 eval. Hard rules enforced end to end.</text>
+
+  <!-- ==== Row 1: User -> Next.js ==== -->
+  <rect x="40" y="100" width="220" height="68" rx="6" class="box"/>
+  <text x="56" y="121" class="head">01 / CLIENT</text>
+  <text x="56" y="143" class="label title">Next.js 16 + React 19</text>
+  <text x="56" y="160" class="small">Chat UI · ProviderSwitcher · rich cards</text>
+
+  <line x1="262" y1="134" x2="318" y2="134" class="arrow" marker-end="url(#arrow)"/>
+  <text x="270" y="125" class="small">SSE</text>
+
+  <rect x="320" y="100" width="220" height="68" rx="6" class="box"/>
+  <text x="336" y="121" class="head">02 / API</text>
+  <text x="336" y="143" class="label title">FastAPI · /chat · /health</text>
+  <text x="336" y="160" class="small">SSE event union · X-LLM-Provider</text>
+
+  <line x1="542" y1="134" x2="598" y2="134" class="arrow-muted" marker-end="url(#arrow-muted)"/>
+  <text x="550" y="125" class="small">tokens</text>
+
+  <rect x="600" y="100" width="220" height="68" rx="6" class="box-muted"/>
+  <text x="616" y="121" class="head">PII BOUNDARY · phase 4</text>
+  <text x="616" y="143" class="label title">Presidio tokenizer</text>
+  <text x="616" y="160" class="small">Never enters LLM context window</text>
+
+  <!-- Eval badge -->
+  <rect x="900" y="104" width="260" height="60" rx="6" class="box-accent"/>
+  <text x="916" y="125" class="head">EVAL · current run</text>
+  <text x="916" y="148" class="accent title" font-size="22" font-weight="800">17 / 17 PASS</text>
+  <text x="1020" y="148" class="muted" font-size="11">191s wall clock</text>
+
+  <!-- ==== Row 2: Orchestrator ==== -->
+  <rect x="320" y="220" width="500" height="84" rx="6" class="box"/>
+  <text x="336" y="241" class="head">03 / ORCHESTRATOR</text>
+  <text x="336" y="263" class="label title">LangGraph · Claude Sonnet 4.6 (default)</text>
+  <text x="336" y="282" class="small">Entity extraction · intent · safety gate · tool dispatch · session</text>
+  <text x="336" y="298" class="small">Anthropic | OpenAI | Groq · one event union · per-request override</text>
+
+  <line x1="430" y1="168" x2="430" y2="218" class="arrow" marker-end="url(#arrow)"/>
+
+  <!-- ==== Row 3: Tools ==== -->
+  <text x="40" y="345" class="head">04 / TOOLS</text>
+
+  <!-- 5 tools as a row -->
+  <g transform="translate(40, 358)">
+    <rect width="220" height="86" rx="6" class="box"/>
+    <text x="14" y="20" class="small" font-weight="700">01 · lookup_part</text>
+    <text x="14" y="40" class="label" font-size="11">exact + pg_trgm fuzzy</text>
+    <text x="14" y="56" class="muted" font-size="11">candidates only · never silent-swap</text>
+    <text x="14" y="74" class="muted" font-size="10">Postgres parts (pg_trgm GIN)</text>
+  </g>
+
+  <g transform="translate(280, 358)">
+    <rect width="220" height="86" rx="6" class="box"/>
+    <text x="14" y="20" class="small" font-weight="700">02 · check_compatibility</text>
+    <text x="14" y="40" class="label" font-size="11">5-rung verdict ladder</text>
+    <text x="14" y="56" class="muted" font-size="11">structured edge · never prose RAG</text>
+    <text x="14" y="74" class="muted" font-size="10">KG (FITS) · fallback: appliance_type</text>
+  </g>
+
+  <g transform="translate(520, 358)">
+    <rect width="220" height="86" rx="6" class="box"/>
+    <text x="14" y="20" class="small" font-weight="700">03 · get_install_guide</text>
+    <text x="14" y="40" class="label" font-size="11">filter by part_id</text>
+    <text x="14" y="56" class="muted" font-size="11">deterministic · no RAG · no validator</text>
+    <text x="14" y="74" class="muted" font-size="10">Postgres install_guides</text>
+  </g>
+
+  <g transform="translate(760, 358)">
+    <rect width="220" height="86" rx="6" class="box"/>
+    <text x="14" y="20" class="small" font-weight="700">04 · troubleshoot</text>
+    <text x="14" y="40" class="label" font-size="11">NL symptom → SY_*</text>
+    <text x="14" y="56" class="muted" font-size="11">safety pattern short-circuit</text>
+    <text x="14" y="74" class="muted" font-size="10">Utility LLM + KG (FIXES)</text>
+  </g>
+
+  <g transform="translate(1000, 358)">
+    <rect width="160" height="86" rx="6" class="box"/>
+    <text x="14" y="20" class="small" font-weight="700">05 · find_parts_</text>
+    <text x="14" y="34" class="small" font-weight="700">by_symptom</text>
+    <text x="14" y="54" class="label" font-size="11">KG traversal</text>
+    <text x="14" y="70" class="muted" font-size="10">SQL multi-hop</text>
+  </g>
+
+  <!-- arrows from orchestrator to tools -->
+  <line x1="570" y1="304" x2="150" y2="356" class="arrow" marker-end="url(#arrow)"/>
+  <line x1="570" y1="304" x2="390" y2="356" class="arrow" marker-end="url(#arrow)"/>
+  <line x1="570" y1="304" x2="630" y2="356" class="arrow" marker-end="url(#arrow)"/>
+  <line x1="570" y1="304" x2="870" y2="356" class="arrow" marker-end="url(#arrow)"/>
+  <line x1="570" y1="304" x2="1080" y2="356" class="arrow" marker-end="url(#arrow)"/>
+
+  <!-- ==== Row 4: Validator ==== -->
+  <rect x="320" y="476" width="500" height="68" rx="6" class="box-accent"/>
+  <text x="336" y="497" class="head">05 / VALIDATOR · selective</text>
+  <text x="336" y="519" class="label title">Cross-family LLM (gpt-oss-20b on Groq)</text>
+  <text x="336" y="536" class="small">Fires on: inferred compat · troubleshoot · low confidence. pass | retry | escalate.</text>
+
+  <line x1="570" y1="444" x2="570" y2="474" class="arrow" marker-end="url(#arrow)"/>
+  <text x="580" y="465" class="small">high-risk paths only</text>
+
+  <!-- ==== Row 5: Data layer ==== -->
+  <text x="40" y="585" class="head">06 / DATA LAYER</text>
+
+  <g transform="translate(40, 598)">
+    <rect width="360" height="124" rx="6" class="box"/>
+    <text x="14" y="22" class="label title">Postgres (Supabase) · raw SQL</text>
+    <text x="14" y="42" class="muted" font-size="11">parts (50) · models (21) · compatibility (38)</text>
+    <text x="14" y="58" class="muted" font-size="11">symptoms (10) · symptom_fixes (28)</text>
+    <text x="14" y="74" class="muted" font-size="11">install_guides (10) · repair_stories</text>
+    <text x="14" y="90" class="muted" font-size="11">conversations · messages · tickets</text>
+    <text x="14" y="110" class="small" font-style="italic">pg_trgm fuzzy SKU · pgcrypto for ticket PII (phase 4)</text>
+  </g>
+
+  <g transform="translate(420, 598)">
+    <rect width="360" height="124" rx="6" class="box"/>
+    <text x="14" y="22" class="label title">NetworkX KG (in-memory)</text>
+    <text x="14" y="42" class="muted" font-size="11">100 nodes · 178 typed edges · JSON snapshot</text>
+    <text x="14" y="58" class="muted" font-size="11">FITS · FIXES · MADE_BY · BELONGS_TO</text>
+    <text x="14" y="74" class="muted" font-size="11">OCCURS_IN · INSTALLED_VIA</text>
+    <text x="14" y="94" class="small" font-style="italic">KnowledgeGraph protocol · Neo4j swap = 1 file</text>
+  </g>
+
+  <g transform="translate(800, 598)">
+    <rect width="360" height="124" rx="6" class="box-muted"/>
+    <text x="14" y="22" class="label title">Hybrid RAG · phase 2</text>
+    <text x="14" y="42" class="muted" font-size="11">Chroma → pgvector behind VectorStore protocol</text>
+    <text x="14" y="58" class="muted" font-size="11">BM25 + dense + RRF + cross-encoder rerank</text>
+    <text x="14" y="74" class="muted" font-size="11">Mandatory metadata pre-filter</text>
+    <text x="14" y="94" class="small" font-style="italic">Lights up tools 4 + 5 over real scrape</text>
+  </g>
+
+  <!-- Tools to data -->
+  <line x1="150" y1="444" x2="150" y2="596" class="arrow" marker-end="url(#arrow)"/>
+  <line x1="390" y1="444" x2="390" y2="596" class="arrow" marker-end="url(#arrow)"/>
+  <line x1="630" y1="444" x2="500" y2="596" class="arrow" marker-end="url(#arrow)"/>
+  <line x1="870" y1="444" x2="600" y2="596" class="arrow" marker-end="url(#arrow)"/>
+  <line x1="1080" y1="444" x2="600" y2="596" class="arrow" marker-end="url(#arrow)"/>
+
+  <!-- Footer -->
+  <line x1="40" y1="740" x2="1160" y2="740" stroke="#e5e5e5" stroke-width="1"/>
+  <text x="40" y="755" class="muted" font-size="10">Instalily Case Study · Sarthak Chandarana</text>
+  <text x="1160" y="755" text-anchor="end" class="muted" font-size="10">github.com/sarthakc123/instalily-partselect-agent</text>
+</svg>
