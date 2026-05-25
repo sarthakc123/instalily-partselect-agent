@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+/* PartSelect-style theme: deep blue header + orange accent. Tuned for
+   readability in a light-mode chat surface. Dark mode kept minimal. */
+:root {
+  --background: #f7f8fb;
+  --foreground: #0f172a;
+
+  --ps-blue: #1c4587;
+  --ps-blue-dark: #143368;
+  --ps-blue-fg: #ffffff;
+  --ps-orange: #ff7a00;
+  --ps-orange-dark: #e66a00;
+
+  --surface: #ffffff;
+  --surface-muted: #f1f3f8;
+  --border: #e2e8f0;
+  --muted-foreground: #475569;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-ps-blue: var(--ps-blue);
+  --color-ps-blue-dark: var(--ps-blue-dark);
+  --color-ps-blue-fg: var(--ps-blue-fg);
+  --color-ps-orange: var(--ps-orange);
+  --color-ps-orange-dark: var(--ps-orange-dark);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --color-muted-foreground: var(--muted-foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0b1220;
+    --foreground: #e2e8f0;
+    --surface: #111a2e;
+    --surface-muted: #18233d;
+    --border: #1f2a45;
+    --muted-foreground: #94a3b8;
+  }
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family:
+    var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
+}
