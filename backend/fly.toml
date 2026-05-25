@@ -1,0 +1,65 @@
+# Fly.io config for the PartSelect chat agent backend.
+#
+# First-time deploy:
+#   cd backend
+#   fly launch --no-deploy --copy-config --name partselect-chat-api
+#   # accept the existing fly.toml; pick a region close to you.
+#   fly secrets set \
+#     DATABASE_URL='postgresql://...@db.<ref>.supabase.co:5432/postgres' \
+#     ANTHROPIC_API_KEY='sk-ant-...' \
+#     GROQ_API_KEY='gsk_...' \
+#     CORS_ORIGINS='https://your-frontend.vercel.app'
+#   fly deploy
+#
+# Subsequent deploys: `fly deploy` from this directory.
+# Logs: `fly logs`.  SSH into the running VM: `fly ssh console`.
+
+app = "partselect-chat-api"
+primary_region = "iad"
+
+[build]
+  # Dockerfile lives next to this fly.toml.
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8000"
+  LOG_LEVEL = "INFO"
+
+  # Role defaults; secrets cover the API keys themselves.
+  LLM_ORCHESTRATOR_PROVIDER = "anthropic"
+  LLM_ORCHESTRATOR_MODEL = "claude-sonnet-4-6"
+  LLM_VALIDATOR_PROVIDER = "groq"
+  LLM_VALIDATOR_MODEL = "openai/gpt-oss-20b"
+  LLM_UTILITY_PROVIDER = "groq"
+  LLM_UTILITY_MODEL = "llama-3.1-8b-instant"
+
+  # Local-only filesystem paths (KG snapshot). KG is rebuilt from Postgres
+  # on every boot via the FastAPI lifespan; the snapshot is just a restart
+  # shortcut. Fine without a persistent volume.
+  KG_PATH = "/tmp/kg.json"
+  CHROMA_PATH = "/tmp/chroma"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  # Keep 1 machine running so the first request after idle doesn't pay a
+  # cold-start that the LLM streaming UX would expose. Bump min/max for
+  # real traffic.
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [[http_service.checks]]
+    grace_period = "20s"
+    interval = "15s"
+    method = "GET"
+    timeout = "5s"
+    path = "/health"
+
+[[vm]]
+  # 1 shared vCPU + 1 GB RAM is enough for one uvicorn worker on the
+  # current event volume. Scale up when the validator + multiple chained
+  # tool calls start backing up.
+  size = "shared-cpu-1x"
+  memory = "1gb"

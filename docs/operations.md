@@ -169,17 +169,129 @@ look invisible against the savings line.
 
 ---
 
-## Deployment targets (Phase 5)
+## Deployment
 
-Not built; documented so the choice is reviewable.
+The deploy artifacts ship in the repo. The mental model is three
+independently-managed pieces:
 
-- **Backend**: Fly.io or Render for the FastAPI process. Single region
-  to start; multi-region requires sticky sessions or Redis for the
-  conversation cache (Postgres already shares state).
-- **Frontend**: Vercel. Set `NEXT_PUBLIC_BACKEND_URL` to the backend
-  public URL.
-- **Database**: Supabase managed Postgres. Direct connection in single
-  region; pooler in transaction mode if scaling out.
+- **Postgres**: Supabase (already cloud). Just paste `DATABASE_URL`.
+- **Backend**: Fly.io. Built from [`backend/Dockerfile`](../backend/Dockerfile),
+  configured by [`backend/fly.toml`](../backend/fly.toml). Single shared-cpu
+  VM with 1 GB RAM; `min_machines_running = 1` so the first request after
+  idle does not pay a cold-start (which the streaming UX would expose).
+- **Frontend**: Vercel. Standard Next.js build. Env vars covered by
+  [`frontend/.env.example`](../frontend/.env.example).
+
+### Backend → Fly.io
+
+First-time deploy (5 minutes once you have an account):
+
+```bash
+brew install flyctl                # or: curl -L https://fly.io/install.sh | sh
+fly auth signup                    # or `fly auth login` if you already have one
+
+cd backend
+fly launch --no-deploy --copy-config --name partselect-chat-api
+# When prompted: accept the existing fly.toml; pick the region nearest you
+# (the default is iad). Skip the suggested Postgres/Redis (we have Supabase).
+
+fly secrets set \
+  DATABASE_URL='postgresql://...@db.<ref>.supabase.co:5432/postgres' \
+  ANTHROPIC_API_KEY='sk-ant-...' \
+  GROQ_API_KEY='gsk_...' \
+  CORS_ORIGINS='https://<your-frontend>.vercel.app'
+
+fly deploy
+```
+
+Subsequent deploys: `fly deploy` from the `backend/` directory.
+
+Verify:
+
+```bash
+curl https://partselect-chat-api.fly.dev/health
+# Expect: {"status":"ok","db_ok":true,"parts_in_db":50,"kg":{...}}
+```
+
+If `parts_in_db` is 0, the DB is empty (you pointed `DATABASE_URL` at a fresh
+project rather than the dev one). One-time seed from inside the VM:
+
+```bash
+fly ssh console -C "python -m scripts.init_db"
+fly ssh console -C "python -m scripts.seed"
+fly ssh console -C "python -m scripts.build_kg"
+# Re-check /health: parts_in_db should now be 50.
+```
+
+The schema is idempotent (`apply_schema()` runs on every boot anyway); the
+seed loader uses `ON CONFLICT DO NOTHING` so re-runs are safe.
+
+Useful commands:
+- `fly logs` — tail structured logs.
+- `fly ssh console` — drop into the running VM (smoke scripts are baked in).
+- `fly status` — VM count, health, image SHA.
+
+Image size is ~250 MB (production deps only; the Phase 2 retrieval and
+Phase 4 PII deps are in optional pyproject groups not installed in the
+production image). The KG is rebuilt from Postgres on boot via the FastAPI
+lifespan (`app.main.lifespan`); no persistent volume is required.
+
+### Frontend → Vercel
+
+```bash
+npm install -g vercel              # or use the Vercel dashboard "Import Project"
+
+cd frontend
+vercel link                        # one-time; pick "Create new project"
+vercel env add NEXT_PUBLIC_BACKEND_URL production
+# Paste the Fly.io URL, for example: https://partselect-chat-api.fly.dev
+
+vercel --prod
+```
+
+Or via the dashboard: connect the GitHub repo, set the project root to
+`frontend/`, and add `NEXT_PUBLIC_BACKEND_URL` under Environment Variables
+(scope: Production + Preview).
+
+Once the Vercel domain is known, set it on the backend so CORS allows it:
+
+```bash
+fly secrets set CORS_ORIGINS='https://<your-app>.vercel.app'
+# Fly automatically restarts the VM after a secret change.
+```
+
+### Smoke test on the public URLs
+
+```bash
+BACKEND=https://partselect-chat-api.fly.dev
+FRONTEND=https://<your-app>.vercel.app
+
+# 1. Backend up?
+curl -fsS "$BACKEND/health" | jq .status   # -> "ok"
+
+# 2. Frontend up?
+curl -fsS -o /dev/null -w "%{http_code}\n" "$FRONTEND"   # -> 200
+
+# 3. End-to-end /chat stream
+curl -sN -X POST "$BACKEND/chat" \
+  -H "Content-Type: application/json" \
+  -d '{"message":"Is part PS11743427 compatible with my WDT780SAEM1?"}' \
+  | head -20
+# Expect: conversation -> tool_call(check_compatibility) ->
+#         tool_result(verdict=yes) -> text_delta(s) -> done
+```
+
+If end-to-end works on the public URLs, the full Phase 1 eval set is
+expected to pass against the deployed backend; re-run with
+`DATABASE_URL` pointed at production:
+
+```bash
+cd backend
+DATABASE_URL='...supabase prod URL...' .venv/bin/python -m tests.eval.run_eval
+```
+
+### Other targets (not used in Phase 1)
+
 - **Vector store (Phase 2)**: pgvector on the same Supabase instance.
   One extension call away.
 - **KG (Phase 4)**: Neo4j AuraDB when NetworkX outgrows a single

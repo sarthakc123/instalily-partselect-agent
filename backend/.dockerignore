@@ -1,0 +1,43 @@
+# Anything not needed in the image. Keeps the build context small and
+# prevents secrets from being baked in.
+
+# Local secrets
+.env
+.env.local
+*.env
+
+# Virtualenvs
+.venv/
+venv/
+
+# Python caches
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# Tests + dev tooling not needed in the runtime image. Smoke scripts ARE
+# copied because they're handy for ad-hoc debugging from `fly ssh console`.
+tests/
+
+# Local KG snapshot + scraped data. KG rebuilds on startup from Postgres
+# (see app.agents.graph.get_kg()); the snapshot is just a restart shortcut.
+data/chroma/
+data/kg.json
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Docs and the scraper stay outside the runtime image
+docs/
+scraper/
+
+# Git
+.git/
+.gitignore
