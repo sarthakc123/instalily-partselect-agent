@@ -33,3 +33,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Nested repo clone used only for push verification
+instalily-partselect-agent/

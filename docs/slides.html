@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PartSelect Chat Agent — Instalily Case Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── Tokens ── */
+:root {
+  --brand:      #0a0a0a;
+  --bg:         #ffffff;
+  --surface:    #f5f5f5;
+  --rule:       #e0e0e0;
+  --muted:      #6b6b6b;
+  --accent:     #ff5722;
+  --accent-dim: #fff0eb;
+  --yes:        #16a34a;
+  --no:         #dc2626;
+}
+
+/* ── Page / slide wrapper ── */
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: #ddd;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 32px 0 64px;
+}
+
+.slide {
+  width: 1280px;
+  height: 720px;
+  background: var(--bg);
+  color: var(--brand);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 32px rgba(0,0,0,.18);
+}
+
+/* slide number */
+.slide::after {
+  content: attr(data-n);
+  position: absolute;
+  bottom: 20px;
+  right: 32px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 1px;
+}
+
+/* footer stripe */
+.slide::before {
+  content: 'Instalily Case Study · Sarthak Chandarana';
+  position: absolute;
+  bottom: 16px;
+  left: 32px;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+
+/* ── Accent left bar on non-title slides ── */
+.slide:not(.title)::after {
+  content: attr(data-n);
+  position: absolute;
+  bottom: 20px;
+  right: 32px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 1px;
+}
+
+/* ── Slide padding ── */
+.content {
+  flex: 1;
+  padding: 52px 72px 52px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+/* ── Typography ── */
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+.eyebrow .num {
+  display: inline-block;
+  background: var(--brand);
+  color: var(--bg);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 2px 7px;
+  border-radius: 2px;
+  margin-right: 10px;
+}
+
+h1 { font-size: 52px; font-weight: 800; letter-spacing: -1.5px; line-height: 1.05; color: var(--brand); }
+h2 { font-size: 30px; font-weight: 700; letter-spacing: -0.4px; line-height: 1.15; color: var(--brand);
+     padding-bottom: 14px; border-bottom: 1.5px solid var(--rule); margin-bottom: 24px; }
+h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; color: var(--brand); }
+
+p  { font-size: 17px; line-height: 1.55; color: var(--brand); }
+.muted { color: var(--muted); }
+.small  { font-size: 13px; color: var(--muted); }
+.accent { color: var(--accent); }
+
+/* ── Big number ── */
+.big-num {
+  font-size: 88px;
+  font-weight: 800;
+  letter-spacing: -4px;
+  line-height: 1;
+  color: var(--accent);
+}
+.big-label { font-size: 18px; font-weight: 600; color: var(--muted); margin-top: 4px; }
+
+/* ── Two-column ── */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  flex: 1;
+}
+.two-col-wide { grid-template-columns: 1.15fr 1fr; }
+
+/* ── Tables ── */
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
+th { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+     color: var(--muted); border-bottom: 1.5px solid var(--rule); padding: 6px 10px 8px; text-align: left; }
+td { padding: 9px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; line-height: 1.4; font-size: 15px; }
+tr:last-child td { border-bottom: none; }
+
+/* ── Verdict colours ── */
+.yes  { color: var(--yes);    font-weight: 700; }
+.no   { color: var(--no);     font-weight: 700; }
+.inf  { color: var(--accent); font-weight: 700; }
+.unk  { color: var(--muted);  font-weight: 600; }
+
+/* ── Pills ── */
+.pill {
+  display: inline-block;
+  background: var(--brand);
+  color: var(--bg);
+  font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 3px 8px; border-radius: 3px; margin-right: 8px;
+}
+.pill-orange { background: var(--accent); }
+
+/* ── Code ── */
+code {
+  font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+  font-size: 13px;
+  background: var(--surface);
+  padding: 2px 6px; border-radius: 3px;
+}
+
+/* ── Blockquote ── */
+blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 12px 20px;
+  background: var(--accent-dim);
+  border-radius: 0 4px 4px 0;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--brand);
+  font-style: normal;
+}
+
+/* ── Divider ── */
+hr { border: none; border-top: 1px solid var(--rule); margin: 16px 0; }
+
+/* ── Lists ── */
+ul { padding-left: 20px; }
+li { margin: 5px 0; font-size: 16px; line-height: 1.5; color: var(--brand); }
+
+/* ── TITLE SLIDE ── */
+.slide.title .content {
+  justify-content: flex-end;
+  padding-bottom: 80px;
+}
+.title-accent-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 5px;
+  background: var(--brand);
+}
+.title-left-bar {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 440px;
+  background: var(--brand);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 52px 52px 80px;
+}
+.title-left-bar h1 { color: #fff; font-size: 44px; }
+.title-left-bar .sub { color: rgba(255,255,255,.65); font-size: 16px; margin-top: 14px; line-height: 1.5; font-weight: 400; }
+.title-right {
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  left: 440px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 52px 64px 80px;
+}
+.title-right .label { font-size: 11px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 32px; }
+.stat-row { display: flex; gap: 48px; margin-bottom: 28px; }
+.stat-block .val { font-size: 44px; font-weight: 800; letter-spacing: -2px; color: var(--accent); line-height: 1; }
+.stat-block .lbl { font-size: 12px; color: var(--muted); font-weight: 600; margin-top: 4px; letter-spacing: 0.5px; }
+.contact { font-size: 13px; color: var(--muted); margin-top: 16px; }
+.contact strong { color: var(--brand); }
+
+/* ── Architecture slide ── */
+.arch-box {
+  border: 1.5px solid var(--brand);
+  border-radius: 5px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--bg);
+  text-align: center;
+  line-height: 1.3;
+}
+.arch-box.accent { border-color: var(--accent); background: var(--accent-dim); }
+.arch-box.muted  { border-color: var(--rule);   background: var(--surface); color: var(--muted); }
+.arch-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+.arch-arrow { font-size: 16px; color: var(--muted); flex-shrink: 0; }
+.arch-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 6px; }
+
+/* ── Callout card ── */
+.callout {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  padding: 14px 18px;
+  border-radius: 0 4px 4px 0;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* ── Print / export ── */
+@media print {
+  body { background: none; gap: 0; padding: 0; }
+  .slide {
+    width: 100vw; height: 100vh;
+    page-break-after: always;
+    box-shadow: none;
+  }
+  .slide:last-child { page-break-after: avoid; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════
+     SLIDE 1 — TITLE
+════════════════════════════════════════════════════ -->
+<div class="slide title" data-n="">
+  <div class="title-left-bar">
+    <div class="eyebrow" style="color:rgba(255,255,255,.45); font-size:10px; margin-bottom:20px;">INSTALILY CASE STUDY · MAY 2026</div>
+    <h1>PartSelect<br>Chat Agent</h1>
+    <p class="sub">A production-grade customer-support agent for refrigerator and dishwasher parts. Five tools. Structured KG. Selective validator.</p>
+  </div>
+  <div class="title-right">
+    <p class="label">Current results</p>
+    <div class="stat-row">
+      <div class="stat-block">
+        <div class="val">17/17</div>
+        <div class="lbl">EVAL CASES PASS</div>
+      </div>
+      <div class="stat-block">
+        <div class="val">5</div>
+        <div class="lbl">TYPED TOOLS</div>
+      </div>
+      <div class="stat-block">
+        <div class="val">191s</div>
+        <div class="lbl">FULL EVAL RUN</div>
+      </div>
+    </div>
+    <hr>
+    <p class="contact">Prepared by <strong>Sarthak Chandarana</strong><br>
+    <strong>sarthak.chandarana99@gmail.com</strong><br>
+    github.com/sarthakc123/instalily-partselect-agent</p>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     SLIDE 2 — PROBLEM
+════════════════════════════════════════════════════ -->
+<div class="slide" data-n="01">
+  <div class="content">
+    <div class="eyebrow"><span class="num">01</span> The problem</div>
+    <h2>Appliance parts support is slow, expensive, and brittle.</h2>
+    <div class="two-col" style="margin-top:4px;">
+      <div>
+        <h3>Why it matters</h3>
+        <ul style="margin-top:8px;">
+          <li>Live agent contacts cost <strong>$5–$8 each</strong>. Most are repeat questions: <em>"will this part fit my model?"</em></li>
+          <li style="margin-top:12px;"><strong>Compatibility uncertainty</strong> is the top driver of cart abandonment on parts e-commerce.</li>
+          <li style="margin-top:12px;">Returns from wrong-part purchases compound the cost with shipping, restocking, and brand erosion.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Four question patterns that must be answered correctly <em>and explain themselves</em></h3>
+        <table style="margin-top:10px;">
+          <tr><td style="font-weight:700; width:110px;">Install</td><td style="color:var(--muted)"><em>How do I install PS11752778?</em></td></tr>
+          <tr><td style="font-weight:700;">Compatibility</td><td style="color:var(--muted)"><em>Does this part fit my model?</em></td></tr>
+          <tr><td style="font-weight:700;">Troubleshoot</td><td style="color:var(--muted)"><em>My ice maker is broken, what part?</em></td></tr>
+          <tr><td style="font-weight:700;">Compound</td><td style="color:var(--muted)"><em>Symptom + model + install in one turn.</em></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     SLIDE 3 — THE HARD QUERY
+════════════════════════════════════════════════════ -->
+<div class="slide" data-n="02">
+  <div class="content">
+    <div class="eyebrow"><span class="num">02</span> The real test</div>
+    <h2>If the compound query works, the others fall out for free.</h2>
+    <blockquote style="margin-top:4px;">
+      "Ice maker on my Whirlpool WRF555SDFZ is broken — what part do I need, and how do I install it?"
+    </blockquote>
+    <p style="margin-top:16px; font-size:15px; color:var(--muted);">One message. Four tool calls in a single turn:</p>
+    <table style="margin-top:12px;">
+      <tr>
+        <td style="width:46px;"><span class="pill">01</span></td>
+        <td style="font-weight:600; width:240px;"><code>troubleshoot</code></td>
+        <td>Natural language → canonical symptom → ranked candidates with likelihood scores</td>
+      </tr>
+      <tr>
+        <td><span class="pill">02</span></td>
+        <td style="font-weight:600;"><code>find_parts_by_symptom</code></td>
+        <td>KG traversal (symptom→part→model), annotated with model fitment</td>
+      </tr>
+      <tr>
+        <td><span class="pill">03</span></td>
+        <td style="font-weight:600;"><code>check_compatibility</code></td>
+        <td>Structured edge verdict — never LLM reasoning over prose</td>
+      </tr>
+      <tr>
+        <td><span class="pill">04</span></td>
+        <td style="font-weight:600;"><code>get_install_guide</code></td>
+        <td>Deterministic step-by-step filtered by part_id</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     SLIDE 4 — ARCHITECTURE
+════════════════════════════════════════════════════ -->
+<div class="slide" data-n="03">
+  <div class="content">
+    <div class="eyebrow"><span class="num">03</span> Architecture</div>
+    <h2 style="margin-bottom:18px;">One orchestrator. Five typed tools. Selective validator.</h2>
+
+    <!-- row 1 -->
+    <div class="arch-row">
+      <div class="arch-box" style="width:160px;">Next.js 16<br><span style="font-size:11px;color:var(--muted);">chat UI + rich cards</span></div>
+      <div class="arch-arrow">→ SSE →</div>
+      <div class="arch-box" style="width:160px;">FastAPI<br><span style="font-size:11px;color:var(--muted);">/chat · /health</span></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box" style="width:200px; border-color:var(--brand); background:var(--brand); color:#fff;">LangGraph Orchestrator<br><span style="font-size:11px;color:rgba(255,255,255,.6);">Claude / GPT-4o / Llama</span></div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box muted" style="width:160px;">Presidio (PII)<br><span style="font-size:11px;">Phase 4</span></div>
+    </div>
+
+    <!-- row 2 — tools -->
+    <div class="arch-label" style="margin-top:10px;">Tools</div>
+    <div class="arch-row" style="margin-bottom:0;">
+      <div class="arch-box" style="flex:1; font-size:12px;">lookup_part<br><span style="font-size:10px;color:var(--muted);">exact + fuzzy</span></div>
+      <div class="arch-box accent" style="flex:1; font-size:12px;">check_compat<br><span style="font-size:10px;">5-rung verdict</span></div>
+      <div class="arch-box" style="flex:1; font-size:12px;">get_install_guide<br><span style="font-size:10px;color:var(--muted);">deterministic</span></div>
+      <div class="arch-box" style="flex:1; font-size:12px;">troubleshoot<br><span style="font-size:10px;color:var(--muted);">NL→SY_* + safety</span></div>
+      <div class="arch-box" style="flex:1; font-size:12px;">find_parts_by_<br>symptom</div>
+    </div>
+
+    <!-- row 3 — validator + data -->
+    <div class="arch-row" style="margin-top:8px;">
+      <div class="arch-box accent" style="width:220px; font-size:12px;">Validator (GPT-4o)<br><span style="font-size:10px;">selective · pass|retry|escalate</span></div>
+      <div class="arch-arrow">↓</div>
+      <div class="arch-box" style="flex:1; font-size:12px;">Postgres (Supabase)<br><span style="font-size:10px;color:var(--muted);">10 tables · raw SQL · pg_trgm</span></div>
+      <div style="width:8px;"></div>
+      <div class="arch-box" style="flex:1; font-size:12px;">NetworkX KG<br><span style="font-size:10px;color:var(--muted);">100 nodes · 178 edges · snapshot</span></div>
+      <div style="width:8px;"></div>
+      <div class="arch-box muted" style="flex:1; font-size:12px;">Hybrid RAG<br><span style="font-size:10px;">Phase 2</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     SLIDE 5 — DESIGN CHOICE 1
+════════════════════════════════════════════════════ -->
+<div class="slide" data-n="04">
+  <div class="content">
+    <div class="eyebrow"><span class="num">04</span> Design choice 01</div>
+    <h2>Orchestrator + typed tools, not router-to-specialists.</h2>
+    <div class="two-col two-col-wide">
+      <div>
+        <h3>Why this shape</h3>
+        <ul style="margin-top:8px;">
+          <li>Every action is a typed Python function with a JSON Schema contract. The entire action surface is five entries in <code>tools/registry.py</code>.</li>
+          <li style="margin-top:10px;">No tool calls an LLM internally. Results are auditable, fast, and regression-proof.</li>
+          <li style="margin-top:10px;">Single conversational thread means session memory (<code>last_part</code>, <code>brand</code>, <code>model</code>) carries across turns without specialist coordination.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Tradeoff named</h3>
+        <p style="font-size:15px; margin-top:8px;">Less <em>agentic</em>. We do not get emergent multi-agent behavior.</p>
+        <p style="font-size:15px; margin-top:10px;">For this domain that is the right trade: the failure cost of a hallucinated compatibility verdict outweighs the upside of a more creative agent.</p>
+        <div class="callout" style="margin-top:16px;">
+          "compatibility verdicts come from edges; prose inference is a marked, lower-confidence fallback."
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     SLIDE 6 — DESIGN CHOICE 2
+════════════════════════════════════════════════════ -->
+<div class="slide" data-n="05">
+  <div class="content">
+    <div class="eyebrow"><span class="num">05</span> Design choice 02</div>
+    <h2>Knowledge graph as a structured backbone. Not GraphRAG.</h2>
+    <div class="two-col">
+      <div>
+        <h3>The verdict ladder</h3>
+        <table style="margin-top:10px;">
+          <tr><td style="width:24px; font-weight:700; color:var(--muted);">1</td><td>Missing entity</td><td class="unk">unknown · low</td></tr>
+          <tr><td style="font-weight:700; color:var(--muted);">2</td><td>KG edge exists</td><td class="yes">yes · high</td></tr>
+          <tr><td style="font-weight:700; color:var(--muted);">3</td><td>Cross-appliance types differ</td><td class="no">no · high</td></tr>
+          <tr><td style="font-weight:700; color:var(--muted);">4</td><td>Install-guide series hint matches</td><td class="inf">inferred · medium</td></tr>
+          <tr><td style="font-weight:700; color:var(--muted);">5</td><td>No edge otherwise</td><td class="no">no · medium</td></tr>
+        </table>
+        <p class="small" style="margin-top:10px;">Rung 4 triggers the validator. Rung 3 fires on the case-study "trick" query.</p>
+      </div>
+      <div>
+        <h3>The trick question — live in the eval</h3>
+        <p style="font-size:14px; color:var(--muted); margin-top:6px;"><em>"Is PS11752778 compatible with my WDT780SAEM1?"</em></p>
+        <p style="font-size:14px; margin-top:6px;">PS11752778 is a refrigerator part. WDT780SAEM1 is a dishwasher.</p>
+        <div class="callout" style="margin-top:12px; font-size:14px;">
+          "PS11752778 is not compatible with your WDT780SAEM1, and the reason is an <strong>appliance type mismatch</strong>. PS11752778 is a refrigerator ice maker assembly. WDT780SAEM1 is a dishwasher."
+        </div>
+        <p class="small" style="margin-top:10px;">Most agents say "no fitment entry" and leave the reason unstated.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     SLIDE 7 — HARD RULES
+════════════════════════════════════════════════════ -->
+<div class="slide" data-n="06">
+  <div class="content">
+    <div class="eyebrow"><span class="num">06</span> Design choice 03</div>
+    <h2>Six hard rules. Enforced in code, verified in the eval.</h2>
+    <table style="margin-top:8px;">
+      <tr>
+        <td style="width:28px; font-weight:800; color:var(--muted);">01</td>
+        <td style="width:240px; font-weight:600;">No em dashes in any user-facing text.</td>
+        <td class="small">Eval asserts U+2014 absent in every reply.</td>
+      </tr>
+      <tr>
+        <td style="font-weight:800; color:var(--muted);">02</td>
+        <td style="font-weight:600;">PII never enters the LLM context window.</td>
+        <td class="small">Presidio inbound · ticket form bypass · log redaction.</td>
+      </tr>
+      <tr>
+        <td style="font-weight:800; color:var(--muted);">03</td>
+        <td style="font-weight:600;">Compatibility verdicts from structured edges.</td>
+        <td class="small">Verdict ladder; prose inference marked + validator-gated.</td>
+      </tr>
+      <tr>
+        <td style="font-weight:800; color:var(--muted);">04</td>
+        <td style="font-weight:600;">Safety symptoms short-circuit to escalation.</td>
+        <td class="small">Regex pattern match pre-empts LLM and KG.</td>
+      </tr>
+      <tr>
+        <td style="font-weight:800; color:var(--muted);">05</td>
+        <td style="font-weight:600;">Fuzzy SKU matches require user confirmation.</td>
+        <td class="small">Repo returns <code>list[Part]</code>, never <code>Part</code>.</td>
+      </tr>
+      <tr>
+        <td style="font-weight:800; color:var(--muted);">06</td>
+        <td style="font-weight:600;">Validator never silently passes a failure.</td>
+        <td class="small"><code>pass | retry | escalate</code>, retry cap of 1.</td>
+      </tr>
+    </table>
+    <div class="callout" style="margin-top:20px;">
+      These are the failure modes that get a vendor <strong>fired</strong>. Getting them right is what unblocks enterprise sales.
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     SLIDE 8 — PROVIDER GATEWAY
+════════════════════════════════════════════════════ -->
+<div class="slide" data-n="07">
+  <div class="content">
+    <div class="eyebrow"><span class="num">07</span> Design choice 04</div>
+    <h2>Provider-agnostic LLM gateway. Insurance, not lock-in.</h2>
+    <div class="two-col">
+      <div>
+        <h3>One normalized event union</h3>
+        <div style="background:var(--surface); padding:14px 16px; border-radius:4px; margin-top:10px; font-size:14px; font-family:'JetBrains Mono','SF Mono',Menlo,monospace; line-height:1.7; color:var(--brand);">
+          TextDelta<br>
+          ToolCallStart · ToolCallDelta · ToolCallComplete<br>
+          Usage · Done · StreamError
+        </div>
+        <p style="font-size:14px; margin-top:12px; color:var(--muted);">Same orchestrator code runs on Anthropic, OpenAI, and Groq. Per-request <code>X-LLM-Provider</code> header flips providers mid-conversation.</p>
+      </div>
+      <div>
+        <h3>Insurance benefits</h3>
+        <ul style="margin-top:8px; font-size:15px;">
+          <li><strong>Rate-limit resilience.</strong> Groq 429? Switch to Anthropic; user never sees it.</li>
+          <li style="margin-top:8px;"><strong>Cross-family validator.</strong> Validator uses a different LLM family from the orchestrator. Diversity catches errors one family makes that another does not.</li>
+          <li style="margin-top:8px;"><strong>Cost flexibility.</strong> Cheap Groq for utility role; premium Claude for orchestrator.</li>
+          <li style="margin-top:8px;"><strong>No vendor lock-in.</strong> A new provider is one file.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     SLIDE 9 — EVAL
+════════════════════════════════════════════════════ -->
+<div class="slide" data-n="08">
+  <div class="content">
+    <div class="eyebrow"><span class="num">08</span> Eval results</div>
+    <h2 style="margin-bottom:16px;">17 / 17 on the case-study eval suite.</h2>
+    <div class="two-col">
+      <div>
+        <table>
+          <thead><tr><th>Category</th><th>Cases</th><th>Result</th></tr></thead>
+          <tbody>
+            <tr><td>Install</td><td>2</td><td class="yes">PASS</td></tr>
+            <tr><td>Compatibility (all 5 verdict rungs)</td><td>5</td><td class="yes">PASS</td></tr>
+            <tr><td>Troubleshoot</td><td>1</td><td class="yes">PASS</td></tr>
+            <tr><td>Compound — the real test</td><td>1</td><td class="yes">PASS</td></tr>
+            <tr><td>Edge (fuzzy, case, missing, safety)</td><td>4</td><td class="yes">PASS</td></tr>
+            <tr><td>Out-of-scope</td><td>2</td><td class="yes">PASS</td></tr>
+            <tr><td>Adversarial (prompt injection)</td><td>1</td><td class="yes">PASS</td></tr>
+            <tr><td>Validator (selective trigger)</td><td>1</td><td class="yes">PASS</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <div class="big-num">17/17</div>
+          <div class="big-label">191s wall clock</div>
+        </div>
+        <div>
+          <h3>Methodology</h3>
+          <p style="font-size:14px; margin-top:6px; color:var(--muted);">Deterministic checks over tool payloads and final text — not LLM-as-judge. A failed <code>p.verdict == 'yes'</code> tells you exactly which row in the ladder broke. Every reply printed verbatim in <code>docs/eval_results.md</code>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     SLIDE 10 — BUSINESS IMPACT
+════════════════════════════════════════════════════ -->
+<div class="slide" data-n="09">
+  <div class="content">
+    <div class="eyebrow"><span class="num">09</span> Business impact</div>
+    <h2>Three categories of value, all unlocked by the same POC.</h2>
+    <div class="two-col two-col-wide" style="margin-top:8px;">
+      <div style="display:flex; flex-direction:column; gap:18px;">
+        <div>
+          <div style="font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:6px;">Deflection</div>
+          <div style="font-size:46px; font-weight:800; letter-spacing:-2px; color:var(--accent); line-height:1;">~$1.8M</div>
+          <p style="font-size:13px; color:var(--muted); margin-top:4px;">illustrative annual cost reduction at 50k contacts/month × 60% deflection × $6 saved per contact.</p>
+        </div>
+        <hr>
+        <div>
+          <div style="font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:6px;">Conversion lift</div>
+          <p style="font-size:15px;">A confident, <strong>explained</strong> yes / no / inferred verdict directly recovers cart abandonment from compatibility uncertainty — the largest single driver on parts sites.</p>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:10px;">Enterprise-sales unlock</div>
+        <div class="callout" style="font-size:15px;">
+          PII never leaves the boundary. Safety symptoms always escalate. These are the failure modes that get a vendor <strong>removed from a procurement shortlist</strong>.
+        </div>
+        <hr style="margin-top:16px;">
+        <div style="font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin: 12px 0 8px;">Time to value</div>
+        <p style="font-size:15px;">50 parts seeded synthetically. A real catalog ingest swaps <strong>the data, not the architecture</strong>. Phase 2 is scrape-and-load, not rebuild.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     SLIDE 11 — ROADMAP
+════════════════════════════════════════════════════ -->
+<div class="slide" data-n="10">
+  <div class="content">
+    <div class="eyebrow"><span class="num">10</span> Scaling roadmap</div>
+    <h2>Architecture has explicit seams. Each phase is a drop-in.</h2>
+    <table style="margin-top:8px;">
+      <thead>
+        <tr><th style="width:80px;">Phase</th><th>What</th><th>How it slots in</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="pill pill-orange">02</span></td>
+          <td style="font-weight:600;">Real PartSelect scrape + hybrid RAG (BM25 + dense + RRF + rerank) over repair stories.</td>
+          <td class="small"><code>VectorStore</code> protocol → Chroma → pgvector swap. Scraper hits same Postgres schema.</td>
+        </tr>
+        <tr>
+          <td><span class="pill pill-orange">03</span></td>
+          <td style="font-weight:600;">Validator expansion — every troubleshoot and inferred-compat path now graded.</td>
+          <td class="small">One conditional edge in <code>graph.py</code>. Validator already built.</td>
+        </tr>
+        <tr>
+          <td><span class="pill pill-orange">04</span></td>
+          <td style="font-weight:600;">Production hardening: rate limits, provider fallback chain, Neo4j swap, LangSmith, PagerDuty.</td>
+          <td class="small"><code>KnowledgeGraph</code> protocol → Neo4j is one file. FastAPI is stateless; KG snapshot loads in &lt;10ms.</td>
+        </tr>
+        <tr>
+          <td><span class="pill pill-orange">05</span></td>
+          <td style="font-weight:600;">Hosted demo on Vercel (frontend) + Fly.io (backend) + Supabase pooler.</td>
+          <td class="small">Already env-driven. <code>NEXT_PUBLIC_BACKEND_URL</code> + <code>CORS_ORIGINS</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     SLIDE 12 — CLOSE
+════════════════════════════════════════════════════ -->
+<div class="slide title" data-n="">
+  <div class="title-left-bar">
+    <div class="eyebrow" style="color:rgba(255,255,255,.45); font-size:10px; margin-bottom:20px;">THANKS FOR READING</div>
+    <h1 style="font-size:40px;">Happy to walk<br>through the<br>code live.</h1>
+  </div>
+  <div class="title-right">
+    <p class="label">Source + run instructions + eval report</p>
+    <p style="font-size:18px; font-weight:700; margin-top:12px; word-break:break-all;">github.com/sarthakc123/<br>instalily-partselect-agent</p>
+    <hr style="margin: 24px 0;">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+      <div>
+        <div style="font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:6px;">17/17 eval</div>
+        <p style="font-size:13px; color:var(--muted);">Every assistant reply verbatim in <code>docs/eval_results.md</code>.</p>
+      </div>
+      <div>
+        <div style="font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:6px;">Quickstart</div>
+        <p style="font-size:13px; color:var(--muted);"><code>pip install -e .</code> + one Supabase project + one Groq API key. Runs anywhere.</p>
+      </div>
+    </div>
+    <p class="contact" style="margin-top:28px;">Sarthak Chandarana · <strong>sarthak.chandarana99@gmail.com</strong></p>
+  </div>
+</div>
+
+</body>
+</html>
